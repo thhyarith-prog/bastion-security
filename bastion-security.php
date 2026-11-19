@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Bastion Security
  * Description:       Lightweight, privacy-first security for WordPress: pre-WordPress firewall, brute-force protection, two-factor login, file integrity and malware scanning, known-vulnerability alerts, hardening and an activity log. Every feature is free and nothing is sent to a vendor cloud.
- * Version:           1.1.3
+ * Version:           1.1.4
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Update URI:        https://github.com/thhyarith-prog/bastion-security
@@ -17,7 +17,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'BASTION_VERSION', '1.1.3' );
+define( 'BASTION_VERSION', '1.1.4' );
 define( 'BASTION_FILE', __FILE__ );
 define( 'BASTION_DIR', plugin_dir_path( __FILE__ ) );
 define( 'BASTION_URL', plugin_dir_url( __FILE__ ) );
