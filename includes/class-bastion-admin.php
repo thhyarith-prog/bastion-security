@@ -523,7 +523,7 @@ class Bastion_Admin {
 		}
 	}
 
-	private static function scan_payload( $state ) {
+	public static function scan_payload( $state ) {
 		$state  = wp_parse_args( $state, array( 'status' => 'idle', 'step' => '', 'files_total' => 0, 'files_done' => 0 ) );
 		$i      = (int) array_search( $state['step'], Bastion_Scanner::STEPS, true );
 		$total  = max( 1, (int) $state['files_total'] );
@@ -649,5 +649,100 @@ class Bastion_Admin {
 				'today' => $today,
 			)
 		);
+	}
+
+	/**
+	 * Numbers for the Prasat Digital dashboard (Prasat_Hub::render): tiles, recent activity,
+	 * 7-day charts and running jobs.
+	 */
+	public static function dashboard() {
+		$now     = time();
+		$today   = class_exists( 'Bastion_Visitors' ) ? Bastion_Visitors::day_start() : strtotime( 'today' );
+		$attacks = Bastion_Events::count_since( Bastion_Events::ATTACK_TYPES, $today );
+		$blocks  = count( Bastion_Firewall::active_blocks() );
+		$counts  = Bastion_Scanner::issue_counts();
+		$serious = (int) $counts[3] + (int) $counts[4];
+		$fw      = Bastion_Firewall::status();
+		$out     = array( 'tiles' => array(), 'activity' => array(), 'charts' => array(), 'jobs' => array() );
+
+		$out['tiles'][] = array(
+			'area'  => __( 'Security', 'bastion-security' ),
+			'value' => number_format_i18n( $attacks ),
+			'label' => __( 'attacks blocked today', 'bastion-security' ),
+			'sub'   => ( 'disabled' === $fw ? __( 'Firewall off', 'bastion-security' ) : __( 'Firewall on', 'bastion-security' ) ) . ' · ' . sprintf( _n( '%d IP blocked now', '%d IPs blocked now', $blocks, 'bastion-security' ), $blocks ),
+			'tone'  => $serious || 'disabled' === $fw ? 'bad' : ( (int) $counts[2] ? 'warn' : 'ok' ),
+			'url'   => admin_url( 'admin.php?page=bastion' ),
+		);
+
+		if ( Bastion_Settings::get( 'visitors_enabled' ) ) {
+			$t    = Bastion_Visitors::totals( $today );
+			$live = Bastion_Visitors::live();
+			$out['tiles'][] = array(
+				'area'  => __( 'Visitors', 'bastion-security' ),
+				'value' => number_format_i18n( $t['visitors'] ),
+				'label' => __( 'visitors today', 'bastion-security' ),
+				'sub'   => sprintf( _n( '%s on the site now', '%s on the site now', $live['count'], 'bastion-security' ), number_format_i18n( $live['count'] ) ) . ' · ' . sprintf( __( '%s views', 'bastion-security' ), number_format_i18n( $t['views'] ) ),
+				'tone'  => 'ok',
+				'url'   => admin_url( 'admin.php?page=bastion-visitors' ),
+			);
+			$series = Bastion_Visitors::series( 7 );
+			$sum    = 0;
+			$views  = 0;
+			foreach ( $series as $d ) {
+				$sum   += $d['visitors'];
+				$views += $d['views'];
+			}
+			$out['charts'][] = array(
+				'title'   => __( 'Visitors · last 7 days', 'bastion-security' ),
+				'summary' => sprintf( __( '%1$s visitors · %2$s views', 'bastion-security' ), number_format_i18n( $sum ), number_format_i18n( $views ) ),
+				'values'  => wp_list_pluck( $series, 'visitors' ),
+				'tone'    => 'brand',
+				'url'     => admin_url( 'admin.php?page=bastion-visitors' ),
+			);
+		} else {
+			$out['tiles'][] = array(
+				'area'  => __( 'Visitors', 'bastion-security' ),
+				'value' => __( 'Off', 'bastion-security' ),
+				'label' => __( 'visitor counting', 'bastion-security' ),
+				'sub'   => __( 'Private, no cookies. Turn it on in one click.', 'bastion-security' ),
+				'tone'  => 'muted',
+				'url'   => admin_url( 'admin.php?page=bastion-visitors' ),
+			);
+		}
+
+		$days  = Bastion_Events::daily_series( 7 );
+		$spam  = Bastion_Events::count_since( array( 'comment_blocked', 'comment_spam' ), $now - WEEK_IN_SECONDS );
+		$total = 0;
+		foreach ( $days as $d ) {
+			$total += $d['attacks'];
+		}
+		$out['charts'][] = array(
+			'title'   => __( 'Attacks blocked · last 7 days', 'bastion-security' ),
+			'summary' => sprintf( __( '%1$s blocked · %2$s spam comments stopped', 'bastion-security' ), number_format_i18n( $total ), number_format_i18n( $spam ) ),
+			'values'  => wp_list_pluck( $days, 'attacks' ),
+			'tone'    => 'bad',
+			'url'     => admin_url( 'admin.php?page=bastion-activity&group=attacks' ),
+		);
+
+		$recent = Bastion_Events::query( array( 'min_severity' => 1, 'per_page' => 6 ) );
+		foreach ( $recent['rows'] as $e ) {
+			$out['activity'][] = array(
+				'time' => (int) $e->created,
+				'text' => $e->message,
+				'tone' => (int) $e->severity >= 3 ? 'bad' : ( (int) $e->severity >= 2 ? 'warn' : 'brand' ),
+				'url'  => admin_url( 'admin.php?page=bastion-activity' ),
+			);
+		}
+
+		if ( Bastion_Scanner::is_running() ) {
+			$p = self::scan_payload( Bastion_Scanner::state() );
+			$out['jobs'][] = array(
+				'title'   => __( 'Malware scan running', 'bastion-security' ),
+				'percent' => (int) $p['percent'],
+				'text'    => $p['message'],
+				'url'     => admin_url( 'admin.php?page=bastion-scanner' ),
+			);
+		}
+		return $out;
 	}
 }
