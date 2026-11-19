@@ -2,10 +2,10 @@
 /**
  * Plugin Name:       Bastion Security
  * Description:       Lightweight, privacy-first security for WordPress: pre-WordPress firewall, brute-force protection, two-factor login, file integrity and malware scanning, known-vulnerability alerts, hardening and an activity log. Every feature is free and nothing is sent to a vendor cloud.
- * Version:           1.1.1
+ * Version:           1.1.2
  * Requires at least: 6.0
  * Requires PHP:      7.4
- * Update URI:        https://www.prasatdigital.com/plugins/bastion-security/
+ * Update URI:        https://github.com/thhyarith-prog/bastion-security
  * Author:            Prasat Digital
  * Author URI:        https://www.prasatdigital.com
  * License:           GPL-2.0-or-later
@@ -17,13 +17,17 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'BASTION_VERSION', '1.1.1' );
+define( 'BASTION_VERSION', '1.1.2' );
 define( 'BASTION_FILE', __FILE__ );
 define( 'BASTION_DIR', plugin_dir_path( __FILE__ ) );
 define( 'BASTION_URL', plugin_dir_url( __FILE__ ) );
 if ( ! defined( 'BASTION_WAF_DIR' ) ) {
 	define( 'BASTION_WAF_DIR', WP_CONTENT_DIR . '/bastion-waf' );
 }
+
+// Updates come from the GitHub releases of this plugin.
+require_once BASTION_DIR . 'includes/prasat-updater.php';
+Prasat_Updater::register( __FILE__, 'thhyarith-prog/bastion-security' );
 
 // Firewall: normally already running from the mu-plugin or auto_prepend_file; this is the fallback.
 require_once BASTION_DIR . 'waf/bootstrap.php';

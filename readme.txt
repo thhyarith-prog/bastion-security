@@ -3,7 +3,7 @@ Tags: security, firewall, two-factor, malware scanner, brute force
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.1.1
+Stable tag: 1.1.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -101,6 +101,9 @@ Only these, and only when the matching feature is on: requests to WordPress.org 
 * Interface fonts: Inter (The Inter Project Authors) and Noto Sans Khmer (Google), SIL Open Font License 1.1, bundled in assets/fonts.
 
 == Changelog ==
+
+= 1.1.2 =
+* New: updates now come from the plugin's GitHub releases (github.com/thhyarith-prog), with the normal one-click "Update now" and automatic updates.
 
 = 1.1.1 =
 * Fix: the scanner no longer reports Prasat plugins (or any plugin with an Update URI) as closed or vulnerable because a different WordPress.org plugin shares the folder name.
