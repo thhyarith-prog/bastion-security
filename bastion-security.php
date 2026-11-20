@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Bastion Security
  * Description:       Lightweight, privacy-first security for WordPress: pre-WordPress firewall, brute-force protection, two-factor login, file integrity and malware scanning, known-vulnerability alerts, hardening and an activity log. Every feature is free and nothing is sent to a vendor cloud.
- * Version:           1.1.5
+ * Version:           1.1.6
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Update URI:        https://github.com/thhyarith-prog/bastion-security
@@ -17,7 +17,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'BASTION_VERSION', '1.1.5' );
+define( 'BASTION_VERSION', '1.1.6' );
 define( 'BASTION_FILE', __FILE__ );
 define( 'BASTION_DIR', plugin_dir_path( __FILE__ ) );
 define( 'BASTION_URL', plugin_dir_url( __FILE__ ) );
@@ -45,11 +45,12 @@ require_once BASTION_DIR . 'includes/class-bastion-scanner.php';
 require_once BASTION_DIR . 'includes/class-bastion-comments.php';
 require_once BASTION_DIR . 'includes/class-bastion-visitors.php';
 require_once BASTION_DIR . 'includes/class-bastion-plugin.php';
+require_once BASTION_DIR . 'includes/class-bastion-autofix.php';
 
 if ( is_admin() || wp_doing_ajax() ) {
 	require_once BASTION_DIR . 'includes/class-bastion-admin.php';
 	require_once BASTION_DIR . 'includes/prasat-hub.php';
-	Prasat_Hub::register( 'bastion', array( 'assets' => BASTION_URL . 'assets/', 'health' => array( 'Bastion_Hardening', 'health' ), 'dashboard' => array( 'Bastion_Admin', 'dashboard' ) ) );
+	Prasat_Hub::register( 'bastion', array( 'assets' => BASTION_URL . 'assets/', 'health' => array( 'Bastion_Hardening', 'health' ), 'dashboard' => array( 'Bastion_Admin', 'dashboard' ), 'fixes' => array( 'Bastion_Autofix', 'fixes' ) ) );
 }
 
 // If a quarantined file turns out to be needed (the site crashes requiring it), restore it at once.

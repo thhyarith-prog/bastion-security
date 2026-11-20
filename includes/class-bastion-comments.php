@@ -415,7 +415,7 @@ class Bastion_Comments {
 	 * One batch of the clean-up: score waiting comments after $cursor and, when $apply, mark the
 	 * spammy ones as spam with one query (no comment hooks, so no call to Akismet's servers).
 	 *
-	 * @return array [ cursor, scanned, spam, reasons, samples, done ]
+	 * @return array [ cursor, scanned, spam, samples, ids (when applied), done ]
 	 */
 	public static function cleanup_batch( $cursor, $apply, $size = 500 ) {
 		global $wpdb;
@@ -443,6 +443,7 @@ class Bastion_Comments {
 			'scanned' => count( $rows ),
 			'spam'    => count( $spam ),
 			'samples' => $samples,
+			'ids'     => $apply ? $spam : array(),
 			'done'    => count( $rows ) < $size,
 		);
 	}
