@@ -102,7 +102,7 @@ class Bastion_Admin {
 				'ajax'  => admin_url( 'admin-ajax.php' ),
 				'nonce' => wp_create_nonce( 'bastion_admin' ),
 				'i18n'  => array(
-					'confirmQuarantine' => __( 'Move this file to quarantine? The site may break if the file is needed; you can restore it from the quarantine list.', 'bastion-security' ),
+					'confirmQuarantine' => __( 'Move this file to quarantine? If it belongs to a theme or plugin you trust, update that theme or plugin instead: the file may be needed. Should the site need it, Bastion puts it back automatically, and you can always restore it from the quarantine list.', 'bastion-security' ),
 					'confirmRepair'     => __( 'Replace this file with the official WordPress.org copy? The current version is kept in quarantine.', 'bastion-security' ),
 					'confirmDelete'     => __( 'Permanently delete this quarantined file? This cannot be undone.', 'bastion-security' ),
 					'confirmDisable2fa' => __( 'Turn off two-factor authentication for this account?', 'bastion-security' ),

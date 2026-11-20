@@ -1011,6 +1011,45 @@ class Bastion_Scanner {
 		return true;
 	}
 
+	/**
+	 * Safety net: if PHP dies because a file Bastion quarantined is required by the site
+	 * (a false positive in a theme or plugin), put the file back so the next page load works.
+	 * Called from WordPress's fatal-error handler and from a shutdown fallback.
+	 * Returns true when a file was put back.
+	 */
+	public static function rescue_from_error( $error ) {
+		static $done = false;
+		if ( $done || ! is_array( $error ) || empty( $error['message'] ) || ! isset( $error['type'] ) ) {
+			return false;
+		}
+		if ( ! in_array( (int) $error['type'], array( E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR ), true ) ) {
+			return false;
+		}
+		if ( ! preg_match( "/Failed opening required '([^']+)'/", (string) $error['message'], $m ) ) {
+			return false;
+		}
+		$done = true;
+		try {
+			$missing = wp_normalize_path( $m[1] );
+			foreach ( Bastion_Firewall::storage()->read_php_array( 'quarantine/manifest.php' ) as $name => $item ) {
+				if ( isset( $item['file'] ) && self::abs_path( $item['file'] ) === $missing && ! file_exists( $missing ) ) {
+					if ( true === self::restore_quarantined( $name ) ) {
+						Bastion_Events::log(
+							'file_auto_restored',
+							'Put ' . $item['file'] . ' back automatically: the site needs it to run. Check it with the scanner, or update its theme or plugin.',
+							array( 'severity' => Bastion_Events::HIGH )
+						);
+						return true;
+					}
+					return false;
+				}
+			}
+		} catch ( Throwable $e ) {
+			return false;
+		}
+		return false;
+	}
+
 	public static function delete_quarantined( $name ) {
 		$storage = Bastion_Firewall::storage();
 		$index   = $storage->read_php_array( 'quarantine/manifest.php' );

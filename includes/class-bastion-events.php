@@ -135,7 +135,7 @@ class Bastion_Events {
 			'logins'  => array( 'label' => __( 'Logins', 'bastion-security' ), 'types' => array( 'login_success', 'login_failed', 'lockout_added', 'tfa_failed', 'tfa_success', 'password_reset_limit' ) ),
 			'changes' => array( 'label' => __( 'Site changes', 'bastion-security' ), 'types' => array( 'user_created', 'user_deleted', 'role_changed', 'profile_changed', 'plugin_activated', 'plugin_deactivated', 'plugin_deleted', 'plugin_installed', 'plugin_updated', 'theme_installed', 'theme_updated', 'theme_switched', 'core_updated', 'option_changed', 'super_admin' ) ),
 			'comments' => array( 'label' => __( 'Comments', 'bastion-security' ), 'types' => array( 'comment_blocked', 'comment_spam', 'comment_held', 'comment_would_block', 'spam_cleanup' ) ),
-			'security' => array( 'label' => __( 'Bastion', 'bastion-security' ), 'types' => array( 'scan_complete', 'file_quarantined', 'file_restored', 'file_repaired', 'tfa_enabled', 'tfa_disabled', 'settings_changed', 'ip_unblocked', 'ip_blocked_manual', 'auto_fix' ) ),
+			'security' => array( 'label' => __( 'Bastion', 'bastion-security' ), 'types' => array( 'scan_complete', 'file_quarantined', 'file_restored', 'file_auto_restored', 'file_repaired', 'tfa_enabled', 'tfa_disabled', 'settings_changed', 'ip_unblocked', 'ip_blocked_manual', 'auto_fix' ) ),
 		);
 	}
 

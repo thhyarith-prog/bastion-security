@@ -3,7 +3,7 @@ Tags: security, firewall, two-factor, malware scanner, brute force
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.1.4
+Stable tag: 1.1.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -101,6 +101,12 @@ Only these, and only when the matching feature is on: requests to WordPress.org 
 * Interface fonts: Inter (The Inter Project Authors) and Noto Sans Khmer (Google), SIL Open Font License 1.1, bundled in assets/fonts.
 
 == Changelog ==
+
+= 1.1.5 =
+* New: if a file Bastion quarantined turns out to be one your site needs to run, Bastion puts it back automatically. You see one error page, and the next reload works again. The activity log records which file was put back.
+* Improved: the quarantine warning now suggests updating the theme or plugin instead when the file belongs to one you trust.
+* Improved: the "Optimize with AI" button has a new Prasat temple design that builds up while your plan is being written and shows a tick when it is ready.
+* Improved: the plan now says which AI wrote it.
 
 = 1.1.4 =
 * New: Smart AI Optimize (Prasat Premium). Add your Premium key on the Prasat Digital dashboard, then "Optimize with AI" runs a fresh check and Claude writes a step-by-step plan for your site, with a button to each fix. Only scores and check titles are sent: no user names, emails, IP addresses or site address.
