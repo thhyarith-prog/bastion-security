@@ -28,6 +28,7 @@ $recent   = Bastion_Events::query( array( 'min_severity' => 2, 'per_page' => 8 )
 $status_labels = array(
 	'extended' => array( __( 'Extended', 'bastion-security' ), 'good', __( 'Runs before WordPress loads.', 'bastion-security' ) ),
 	'pending'  => array( __( 'Activating', 'bastion-security' ), 'warn', __( 'Waiting for the server to load the new configuration (up to 5 minutes).', 'bastion-security' ) ),
+	'stuck'    => array( __( 'Standard', 'bastion-security' ), 'good', __( 'Runs before other plugins load. Extended mode is set up, but this server has not applied it.', 'bastion-security' ) ),
 	'standard' => array( __( 'Standard', 'bastion-security' ), 'good', __( 'Runs before other plugins load.', 'bastion-security' ) ),
 	'basic'    => array( __( 'Basic', 'bastion-security' ), 'warn', __( 'The early loader is missing; running inside the plugin.', 'bastion-security' ) ),
 	'disabled' => array( __( 'Off', 'bastion-security' ), 'bad', __( 'The firewall is disabled.', 'bastion-security' ) ),

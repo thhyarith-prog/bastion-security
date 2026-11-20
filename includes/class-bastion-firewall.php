@@ -111,9 +111,40 @@ class Bastion_Firewall {
 			return 'extended';
 		}
 		if ( get_option( 'bastion_prepend_installed' ) ) {
-			return 'pending';
+			$at = (int) get_option( 'bastion_prepend_installed_at' );
+			if ( ! $at ) { // Installed by an older version: start the clock now.
+				$at = time();
+				update_option( 'bastion_prepend_installed_at', $at, false );
+			}
+			// Still not loaded after 10 minutes: this server ignores the method that was used.
+			return time() - $at > self::STUCK_AFTER ? 'stuck' : 'pending';
 		}
 		return defined( 'BASTION_WAF_MU' ) ? 'standard' : 'basic';
+	}
+
+	/** Seconds after which extended mode that never loaded counts as not working on this server. */
+	const STUCK_AFTER = 600;
+
+	/** The ways of loading the firewall before WordPress, best guess for this server first. */
+	public static function methods() {
+		return 'htaccess' === self::server_method() ? array( 'htaccess', 'user_ini' ) : array( 'user_ini', 'htaccess' );
+	}
+
+	/** A method not tried on this site yet ('' when both were tried). */
+	public static function untried_method() {
+		$tried   = (array) get_option( 'bastion_prepend_tried', array() );
+		$tried[] = (string) get_option( 'bastion_prepend_installed' );
+		foreach ( self::methods() as $m ) {
+			if ( ! in_array( $m, $tried, true ) ) {
+				return $m;
+			}
+		}
+		return '';
+	}
+
+	/** True when both methods were tried and the server applied neither. */
+	public static function extended_unsupported() {
+		return 'stuck' === self::status() && '' === self::untried_method();
 	}
 
 	public static function server_method() {
@@ -130,7 +161,8 @@ class Bastion_Firewall {
 	 *
 	 * @return true|WP_Error
 	 */
-	public static function install_prepend() {
+	public static function install_prepend( $method = '' ) {
+		$method  = in_array( $method, array( 'htaccess', 'user_ini' ), true ) ? $method : self::server_method();
 		$current = (string) ini_get( 'auto_prepend_file' );
 		$ours    = ABSPATH . self::PREPEND_FILE;
 		if ( '' !== $current && realpath( $current ) !== realpath( $ours ) ) {
@@ -146,7 +178,8 @@ class Bastion_Firewall {
 			return new WP_Error( 'bastion_prepend_write', __( 'Could not write the firewall file to the site root. Check file permissions.', 'bastion-security' ) );
 		}
 
-		$method = self::server_method();
+		// Switching method: take our rule out of the other file first.
+		self::write_block( ABSPATH . ( 'htaccess' === $method ? '.user.ini' : '.htaccess' ), 'htaccess' === $method ? '; ' : '# ', array() );
 		if ( 'htaccess' === $method ) {
 			$lines = array(
 				'<IfModule mod_php.c>',
@@ -167,7 +200,11 @@ class Bastion_Firewall {
 			@unlink( $ours );
 			return new WP_Error( 'bastion_prepend_config', __( 'Could not update the server configuration file. Check file permissions.', 'bastion-security' ) );
 		}
+		// Remember every way tried here, including the one in place before (older versions kept no list).
+		$tried = array_merge( (array) get_option( 'bastion_prepend_tried', array() ), array( (string) get_option( 'bastion_prepend_installed' ), $method ) );
 		update_option( 'bastion_prepend_installed', $method, false );
+		update_option( 'bastion_prepend_installed_at', time(), false );
+		update_option( 'bastion_prepend_tried', array_values( array_filter( array_unique( $tried ) ) ), false );
 		return true;
 	}
 
@@ -175,6 +212,8 @@ class Bastion_Firewall {
 		self::write_block( ABSPATH . '.htaccess', '# ', array() );
 		self::write_block( ABSPATH . '.user.ini', '; ', array() );
 		delete_option( 'bastion_prepend_installed' );
+		delete_option( 'bastion_prepend_installed_at' );
+		delete_option( 'bastion_prepend_tried' ); // Removing it by hand starts over.
 		// The prepend file stays until PHP stops loading it (.user.ini is cached for ~5 minutes);
 		// it is harmless because it only loads the firewall when the plugin files exist.
 		wp_schedule_single_event( time() + 600, 'bastion_remove_prepend_file' );

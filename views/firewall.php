@@ -20,15 +20,38 @@ $method   = Bastion_Firewall::server_method();
 	<section class="bastion-card">
 		<h2><?php esc_html_e( 'Protection level', 'bastion-security' ); ?></h2>
 		<ol class="bastion-levels">
-			<li class="<?php echo in_array( $status, array( 'basic', 'standard', 'pending', 'extended' ), true ) ? 'is-done' : ''; ?>"><strong><?php esc_html_e( 'Basic', 'bastion-security' ); ?></strong> — <?php esc_html_e( 'runs inside the plugin', 'bastion-security' ); ?></li>
-			<li class="<?php echo in_array( $status, array( 'standard', 'pending', 'extended' ), true ) ? 'is-done' : ''; ?>"><strong><?php esc_html_e( 'Standard', 'bastion-security' ); ?></strong> — <?php esc_html_e( 'runs before every other plugin', 'bastion-security' ); ?></li>
+			<li class="<?php echo in_array( $status, array( 'basic', 'standard', 'pending', 'stuck', 'extended' ), true ) ? 'is-done' : ''; ?>"><strong><?php esc_html_e( 'Basic', 'bastion-security' ); ?></strong> — <?php esc_html_e( 'runs inside the plugin', 'bastion-security' ); ?></li>
+			<li class="<?php echo in_array( $status, array( 'standard', 'pending', 'stuck', 'extended' ), true ) ? 'is-done' : ''; ?>"><strong><?php esc_html_e( 'Standard', 'bastion-security' ); ?></strong> — <?php esc_html_e( 'runs before every other plugin', 'bastion-security' ); ?></li>
 			<li class="<?php echo 'extended' === $status ? 'is-done' : ( 'pending' === $status ? 'is-pending' : '' ); ?>"><strong><?php esc_html_e( 'Extended', 'bastion-security' ); ?></strong> — <?php esc_html_e( 'runs before WordPress itself, and also guards PHP files that attackers request directly', 'bastion-security' ); ?></li>
 		</ol>
 		<?php if ( 'disabled' === $status ) : ?>
 			<p><?php esc_html_e( 'The firewall is turned off below.', 'bastion-security' ); ?></p>
 		<?php elseif ( get_option( 'bastion_prepend_installed' ) || 'extended' === $status ) : ?>
+			<?php $used = (string) get_option( 'bastion_prepend_installed' ); ?>
 			<?php if ( 'pending' === $status ) : ?>
-				<p class="bastion-note"><?php esc_html_e( 'Configured. PHP caches .user.ini for up to 5 minutes, then extended mode activates by itself.', 'bastion-security' ); ?></p>
+				<p class="bastion-note">
+					<?php
+					echo esc_html(
+						'user_ini' === $used
+							? __( 'Set up in .user.ini. PHP reads that file again within 5 minutes, then extended mode starts by itself.', 'bastion-security' )
+							: __( 'Set up in .htaccess. Extended mode starts with the next page load if this server allows it.', 'bastion-security' )
+					);
+					?>
+				</p>
+			<?php elseif ( 'stuck' === $status && Bastion_Firewall::untried_method() ) : ?>
+				<p class="bastion-note">
+					<?php
+					/* translators: %s: .htaccess or .user.ini */
+					echo esc_html( sprintf( __( 'Set up in %s, but this server has not applied it. The firewall still runs in standard mode. Bastion can try the other way your server may support.', 'bastion-security' ), 'user_ini' === $used ? '.user.ini' : '.htaccess' ) );
+					?>
+				</p>
+				<form method="post" action="<?php echo esc_url( $post_url ); ?>">
+					<?php wp_nonce_field( 'bastion_prepend' ); ?>
+					<input type="hidden" name="action" value="bastion_prepend"><input type="hidden" name="do" value="retry">
+					<button class="button button-primary"><?php esc_html_e( 'Try another way', 'bastion-security' ); ?></button>
+				</form>
+			<?php elseif ( 'stuck' === $status ) : ?>
+				<p class="bastion-note"><?php esc_html_e( 'This server does not let the firewall run before WordPress (both .htaccess and .user.ini were tried). Nothing is wrong: standard protection runs before every other plugin and theme. You can ask your host to allow auto_prepend_file, or remove the setting below.', 'bastion-security' ); ?></p>
 			<?php endif; ?>
 			<form method="post" action="<?php echo esc_url( $post_url ); ?>" data-pd-confirm="<?php esc_attr_e( 'Remove extended protection? The firewall will then start only after other plugins load.', 'bastion-security' ); ?>">
 				<?php wp_nonce_field( 'bastion_prepend' ); ?>

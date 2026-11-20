@@ -131,8 +131,12 @@ class Bastion_Autofix {
 		if ( 'disabled' === $status || 'extended' === $status || 'pending' === $status ) {
 			return array( 'skip' => true );
 		}
-		$method = Bastion_Firewall::server_method();
-		$res    = Bastion_Firewall::install_prepend();
+		$retry  = 'stuck' === $status;
+		$method = $retry ? Bastion_Firewall::untried_method() : Bastion_Firewall::server_method();
+		if ( '' === $method ) {
+			return array( 'skip' => true ); // Both ways tried: this server doesn't allow it.
+		}
+		$res = Bastion_Firewall::install_prepend( $method );
 		if ( is_wp_error( $res ) ) {
 			return new WP_Error( 'bastion_extended', $res->get_error_message() );
 		}
@@ -148,9 +152,13 @@ class Bastion_Autofix {
 			}
 		}
 		Bastion_Events::log( 'auto_fix', 'Smart AI Optimize set the firewall to run before WordPress.', array( 'severity' => Bastion_Events::INFO ) );
-		$did = 'htaccess' === $method
-			? __( 'Set the firewall to run before WordPress, and checked that the site still loads', 'bastion-security' )
-			: __( 'Set the firewall to run before WordPress (your server applies it within 5 minutes)', 'bastion-security' );
+		if ( $retry ) {
+			$did = __( 'Your server ignored the first way of running the firewall before WordPress, so Bastion tried another way (it applies within 10 minutes)', 'bastion-security' );
+		} else {
+			$did = 'htaccess' === $method
+				? __( 'Set the firewall to run before WordPress, and checked that the site still loads', 'bastion-security' )
+				: __( 'Set the firewall to run before WordPress (your server applies it within 5 minutes)', 'bastion-security' );
+		}
 		return array( 'ok' => true, 'did' => $did, 'undo' => $method );
 	}
 

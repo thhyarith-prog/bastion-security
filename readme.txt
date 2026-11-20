@@ -3,7 +3,7 @@ Tags: security, firewall, two-factor, malware scanner, brute force
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.1.6
+Stable tag: 1.1.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -101,6 +101,11 @@ Only these, and only when the matching feature is on: requests to WordPress.org 
 * Interface fonts: Inter (The Inter Project Authors) and Noto Sans Khmer (Google), SIL Open Font License 1.1, bundled in assets/fonts.
 
 == Changelog ==
+
+= 1.1.7 =
+* Fixed: on servers that ignore the extended-firewall setting, Bastion no longer says "activating" forever. After 10 minutes it tries the other way (.user.ini or .htaccess); Smart AI Optimize does this for you, or use "Try another way" on the Firewall screen.
+* Fixed: if the server allows neither way, Bastion says so plainly and stops listing it as a problem. Standard protection, which runs before every other plugin, stays on.
+* Fixed: the Firewall screen now names the file that was actually used.
 
 = 1.1.6 =
 * New: "Optimize with AI" now fixes what is safe to fix, not just lists it. It backs up first with Lifeboat, makes the safe fixes, shows each change under "Fixed for you" with an Undo button, then the AI writes a plan for what is left.

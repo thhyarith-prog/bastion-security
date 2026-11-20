@@ -102,7 +102,13 @@ class Bastion_Hardening {
 		// Firewall.
 		$status = Bastion_Firewall::status();
 		$add( 'waf', 'disabled' !== $status, 15, __( 'Firewall enabled', 'bastion-security' ), __( 'The firewall blocks injection attacks, scanners and brute force before they reach WordPress.', 'bastion-security' ), $fw_url );
-		$add( 'waf_extended', 'extended' === $status, 5, __( 'Firewall runs before WordPress', 'bastion-security' ), __( 'Extended protection also covers PHP files that attackers call directly, and is faster.', 'bastion-security' ), $fw_url, true );
+		if ( 'stuck' === $status && '' === Bastion_Firewall::untried_method() ) {
+			// Not possible on this server: say so on the Firewall screen, don't list it as a problem.
+		} elseif ( 'stuck' === $status ) {
+			$add( 'waf_extended', false, 5, __( 'Firewall runs before WordPress', 'bastion-security' ), __( 'Extended protection is set up, but this server has not applied it. Bastion can try another way: use "Optimize with AI" on the Prasat Digital dashboard, or "Try another way" on the Firewall screen.', 'bastion-security' ), $fw_url, true );
+		} else {
+			$add( 'waf_extended', 'extended' === $status, 5, __( 'Firewall runs before WordPress', 'bastion-security' ), 'pending' === $status ? __( 'Set up: the server applies it within a few minutes.', 'bastion-security' ) : __( 'Extended protection also covers PHP files that attackers call directly, and is faster.', 'bastion-security' ), $fw_url, true );
+		}
 
 		// Core / updates.
 		require_once ABSPATH . 'wp-admin/includes/update.php';

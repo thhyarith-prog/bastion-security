@@ -401,12 +401,16 @@ class Bastion_Admin {
 	public static function post_prepend() {
 		self::guard_post( 'bastion_prepend' );
 		$do = isset( $_POST['do'] ) ? sanitize_key( $_POST['do'] ) : '';
-		if ( 'install' === $do ) {
-			$res = Bastion_Firewall::install_prepend();
+		if ( 'install' === $do || 'retry' === $do ) {
+			$method = 'retry' === $do ? Bastion_Firewall::untried_method() : '';
+			if ( 'retry' === $do && '' === $method ) {
+				self::back( 'bastion-firewall', __( 'Both ways were already tried on this server.', 'bastion-security' ), true );
+			}
+			$res = Bastion_Firewall::install_prepend( $method );
 			if ( is_wp_error( $res ) ) {
 				self::back( 'bastion-firewall', $res->get_error_message(), true );
 			}
-			$msg = 'user_ini' === Bastion_Firewall::server_method()
+			$msg = 'user_ini' === get_option( 'bastion_prepend_installed' )
 				? __( 'Extended protection installed. Your host may take up to 5 minutes to pick up the change.', 'bastion-security' )
 				: __( 'Extended protection installed.', 'bastion-security' );
 			self::back( 'bastion-firewall', $msg );
