@@ -4,7 +4,7 @@
 
 <p align="center">Lightweight, privacy-first WordPress security. Firewall, brute-force protection, two-factor login, malware and integrity scanning, vulnerability alerts, hardening and an activity log. Every feature is free.</p>
 
-<p align="center">Version 1.1.2 · WordPress 6.0+ · PHP 7.4+ · GPL-2.0-or-later · by <a href="https://www.prasatdigital.com">Prasat Digital</a></p>
+<p align="center">Version 1.1.8 · WordPress 6.0+ · PHP 7.4+ · GPL-2.0-or-later · by <a href="https://www.prasatdigital.com">Prasat Digital</a> · <a href="https://www.prasatdigital.com/plugins#bastion">Plugin page</a></p>
 
 ---
 
